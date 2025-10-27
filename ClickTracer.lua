@@ -254,4 +254,148 @@ forceLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
 forceLabel.Font = Enum.Font.Gotham
 forceLabel.TextSize = 14
 local forceBtn = Instance.new("TextButton", forceRow)
-forceBtn.Size = UDim2
+forceBtn.Size = UDim2.new(0.3, 0, 1, 0)
+forceBtn.Position = UDim2.new(0.7, 0, 0, 0)
+forceBtn.Text = cfg.forceSound and "ON" or "OFF"
+forceBtn.Font = Enum.Font.Gotham
+forceBtn.TextSize = 14
+forceBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+forceBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+forceBtn.MouseButton1Click:Connect(function()
+	cfg.forceSound = not cfg.forceSound
+	forceBtn.Text = cfg.forceSound and "ON" or "OFF"
+end)
+
+local colorRow = Instance.new("Frame", content)
+colorRow.Size = UDim2.new(1, 0, 0, 48)
+colorRow.BackgroundTransparency = 1
+local colorLabel = Instance.new("TextLabel", colorRow)
+colorLabel.Text = "🎨 Beam Color (R G B)"
+colorLabel.Size = UDim2.new(0.45, 0, 0, 34)
+colorLabel.BackgroundTransparency = 1
+colorLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
+colorLabel.TextXAlignment = Enum.TextXAlignment.Left
+colorLabel.Font = Enum.Font.Gotham
+colorLabel.TextSize = 14
+
+local rBox = Instance.new("TextBox", colorRow)
+rBox.Size = UDim2.new(0.16, 0, 0, 30)
+rBox.Position = UDim2.new(0.5, 4, 0, 0)
+rBox.Text = tostring(math.floor(cfg.color.R * 255))
+rBox.PlaceholderText = "R"
+rBox.Font = Enum.Font.Code
+rBox.TextSize = 14
+rBox.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+rBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+local gBox = Instance.new("TextBox", colorRow)
+gBox.Size = UDim2.new(0.16, 0, 0, 30)
+gBox.Position = UDim2.new(0.66, 4, 0, 0)
+gBox.Text = tostring(math.floor(cfg.color.G * 255))
+gBox.PlaceholderText = "G"
+gBox.Font = Enum.Font.Code
+gBox.TextSize = 14
+gBox.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+gBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+local bBox = Instance.new("TextBox", colorRow)
+bBox.Size = UDim2.new(0.16, 0, 0, 30)
+bBox.Position = UDim2.new(0.82, 4, 0, 0)
+bBox.Text = tostring(math.floor(cfg.color.B * 255))
+bBox.PlaceholderText = "B"
+bBox.Font = Enum.Font.Code
+bBox.TextSize = 14
+bBox.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+bBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+local function applyColorFromBoxes()
+	local r = tonumber(rBox.Text) or 0
+	local g = tonumber(gBox.Text) or 0
+	local b = tonumber(bBox.Text) or 0
+	cfg.color = Color3.fromRGB(math.clamp(r, 0, 255), math.clamp(g, 0, 255), math.clamp(b, 0, 255))
+end
+rBox.FocusLost:Connect(applyColorFromBoxes)
+gBox.FocusLost:Connect(applyColorFromBoxes)
+bBox.FocusLost:Connect(applyColorFromBoxes)
+
+local function makeBindRow(labelText, defaultKey, onBindChanged)
+	local row = Instance.new("Frame", content)
+	row.Size = UDim2.new(1, 0, 0, 34)
+	row.BackgroundTransparency = 1
+	local label = Instance.new("TextLabel", row)
+	label.Text = labelText
+	label.Size = UDim2.new(0.45, 0, 1, 0)
+	label.BackgroundTransparency = 1
+	label.TextColor3 = Color3.fromRGB(220, 220, 220)
+	label.TextXAlignment = Enum.TextXAlignment.Left
+	label.Font = Enum.Font.Gotham
+	label.TextSize = 14
+	local box = Instance.new("TextBox", row)
+	box.Size = UDim2.new(0.55, 0, 1, 0)
+	box.Position = UDim2.new(0.45, 6, 0, 0)
+	box.Text = defaultKey.Name
+	box.Font = Enum.Font.Code
+	box.TextSize = 14
+	box.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+	box.TextColor3 = Color3.fromRGB(255, 255, 255)
+	box.ClearTextOnFocus = false
+	local capturing = false
+	box.Focused:Connect(function()
+		capturing = true
+		box.Text = "Press any key..."
+	end)
+	UserInputService.InputBegan:Connect(function(input, processed)
+		if capturing and input.UserInputType == Enum.UserInputType.Keyboard then
+			onBindChanged(input.KeyCode)
+			box.Text = input.KeyCode.Name
+			capturing = false
+		end
+	end)
+	return row, box
+end
+
+local _, menuBindBox = makeBindRow("⌨️ Menu Toggle Key", cfg.toggleKey, function(k)
+	cfg.toggleKey = k
+end)
+local _, fireBindBox = makeBindRow("⌨️ Fire Bind", cfg.fireBind, function(k)
+	cfg.fireBind = k
+end)
+local _, cursorBindBox = makeBindRow("⌨️ Cursor Unlock", cfg.cursorBind, function(k)
+	cfg.cursorBind = k
+end)
+
+UserInputService.InputBegan:Connect(function(input, processed)
+	if processed then return end
+	if input.UserInputType == Enum.UserInputType.Keyboard then
+		if input.KeyCode == cfg.toggleKey then
+			frame.Visible = not frame.Visible
+		elseif input.KeyCode == cfg.fireBind then
+			holdingFireBind = not holdingFireBind
+		elseif input.KeyCode == cfg.cursorBind then
+			cursorUnlocked = not cursorUnlocked
+			if cursorUnlocked then
+				UserInputService.MouseBehavior = Enum.MouseBehavior.Default
+				UserInputService.MouseIconEnabled = true
+			else
+				UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
+				UserInputService.MouseIconEnabled = false
+			end
+		end
+	end
+end)
+
+frame.Visible = true
+soundBox.Text = tostring(cfg.soundId)
+textureBox.Text = tostring(cfg.textureId)
+widthBox.Text = tostring(cfg.beamWidth)
+lightBox.Text = tostring(cfg.lightEmission)
+cpsBox.Text = tostring(cfg.cps)
+durBox.Text = tostring(cfg.lineDuration)
+menuBindBox.Text = tostring(cfg.toggleKey.Name)
+fireBindBox.Text = tostring(cfg.fireBind.Name)
+cursorBindBox.Text = tostring(cfg.cursorBind.Name)
+rBox.Text = tostring(math.floor(cfg.color.R * 255))
+gBox.Text = tostring(math.floor(cfg.color.G * 255))
+bBox.Text = tostring(math.floor(cfg.color.B * 255))
+detectBtn.Text = cfg.detectHits and "ON" or "OFF"
+forceBtn.Text = cfg.forceSound and "ON" or "OFF")
