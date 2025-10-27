@@ -398,4 +398,4 @@ rBox.Text = tostring(math.floor(cfg.color.R * 255))
 gBox.Text = tostring(math.floor(cfg.color.G * 255))
 bBox.Text = tostring(math.floor(cfg.color.B * 255))
 detectBtn.Text = cfg.detectHits and "ON" or "OFF"
-forceBtn.Text = cfg.forceSound and "ON" or "OFF")
+forceBtn.Text = cfg.forceSound and "ON" or "OFF"
