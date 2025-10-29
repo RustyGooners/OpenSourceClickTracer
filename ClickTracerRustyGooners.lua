@@ -32,7 +32,7 @@ local cursorUnlocked = false
 -- GUI
 local playerGui = player:WaitForChild("PlayerGui")
 local gui = Instance.new("ScreenGui")
-gui.Name = "TracerCustomizerGUI"
+gui.Name = "tracers"
 gui.ResetOnSpawn = false
 gui.DisplayOrder = 9999
 gui.IgnoreGuiInset = true
